@@ -67,7 +67,7 @@ Abrir en el navegador: http://localhost/gestor_convenios_fio/public
 ### Credenciales del administrador
 - Email: admin@fio.uner.edu.ar
 - Password: Admin1234!
-(Cambiar la contrasena en el primer acceso!)
+(¡Cambiar la contrasena en el primer acceso!)
 
 ## Para desarrollo (opcional)
 Si se necesita modificar el codigo, usar estos comandos en terminales separadas:
