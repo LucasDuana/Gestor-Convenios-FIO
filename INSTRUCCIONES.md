@@ -31,34 +31,43 @@ Cotejamiento: utf8mb4_unicode_ci
 cd C:\xampp\htdocs\gestor_convenios_fio
 `
 
-### 6. Generar la clave de la aplicacion
+### 6. Instalar dependencias de PHP
+`
+composer install
+`
+
+### 7. Generar la clave de la aplicacion
 `
 php artisan key:generate
 `
 
-### 7. Ejecutar las migraciones
+### 8. Ejecutar las migraciones
 `
 php artisan migrate
 `
 
-### 8. Cargar los datos iniciales del sistema
+### 9. Cargar los datos iniciales del sistema
 `
 php artisan db:seed --class=ProductionSeeder
 `
+### Recomendacion(ingresar datos de prueba mediante comando para el entendimiento del sistema)
+`
+php artisan db:seed --class=DatabaseSeeder
+`
 
-### 9. Compilar los assets del frontend (solo la primera vez)
+### 10. Compilar los assets del frontend (solo la primera vez)
 `
 npm install
 npm run build
 `
 
-### 10. Acceder al sistema
+### 11. Acceder al sistema
 Abrir en el navegador: http://localhost/gestor_convenios_fio/public
 
 ### Credenciales del administrador
 - Email: admin@fio.uner.edu.ar
 - Password: Admin1234!
-(Cambiar la contrasena en el primer acceso)
+(Cambiar la contrasena en el primer acceso!)
 
 ## Para desarrollo (opcional)
 Si se necesita modificar el codigo, usar estos comandos en terminales separadas:
