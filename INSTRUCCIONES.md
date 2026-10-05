@@ -1,78 +1,112 @@
-﻿# Guia de Instalacion - Gestor de Convenios FIO
+﻿# Puesta en marcha - Gestor de Convenios FIO
 
-## Requisitos previos
+Esta guía configura el proyecto en Windows con XAMPP, crea el esquema de la base y carga los datos iniciales del sistema. Está escrita para la carpeta `C:\xampp\htdocs\Gestor-Convenios-FIO`.
 
-Instalar en la PC:
-- XAMPP 8.x (incluye PHP 8.1+ y MySQL) -> https://www.apachefriends.org/
-- Composer 2.x -> https://getcomposer.org/
-- Node.js 18+ (incluye npm) -> https://nodejs.org/
+## Requisitos
 
-## Pasos de instalacion
+- XAMPP con Apache, MySQL y PHP 8.1 o posterior.
+- Composer 2.
+- Node.js 18 o posterior (incluye npm).
+- Extensiones PHP habilitadas: `fileinfo`, `mbstring`, `openssl`, `pdo_mysql`, `tokenizer`, `xml`, `ctype`, `curl` y `zip`.
 
-### 1. Copiar el proyecto
-Copiar la carpeta gestor_convenios_fio dentro de C:\xampp\htdocs\
+Si los comandos `php`, `composer` o `npm` no se reconocen, agregá sus carpetas al `PATH` o ejecutalos con sus rutas completas. En XAMPP, PHP suele estar en `C:\xampp\php\php.exe`.
 
-### 2. Configurar el archivo .env
-Copiar .env.production como .env:
-`
-copy .env.production .env
-`
+## Instalación desde una copia limpia
 
-### 3. Iniciar XAMPP
-Abrir XAMPP Control Panel e iniciar Apache y MySQL.
+1. Copiá/cloná el repositorio en `C:\xampp\htdocs\Gestor-Convenios-FIO`.
+2. En el panel de XAMPP, iniciá **Apache** y **MySQL**.
+3. Abrí una terminal en la carpeta del proyecto:
 
-### 4. Crear la base de datos
-Abrir phpMyAdmin en http://localhost/phpmyadmin
-Crear una base de datos llamada: gestor_convenios_fio
-Cotejamiento: utf8mb4_unicode_ci
+   ```powershell
+   cd C:\xampp\htdocs\Gestor-Convenios-FIO
+   ```
 
-### 5. Abrir una terminal en la carpeta del proyecto
-`
-cd C:\xampp\htdocs\gestor_convenios_fio
-`
+4. Instalá las dependencias PHP y JavaScript:
 
-### 6. Instalar dependencias de PHP
-`
-composer install
-`
+   ```powershell
+   composer install
+   npm install
+   ```
 
-### 7. Generar la clave de la aplicacion
-`
-php artisan key:generate
-`
+5. Creá el archivo de entorno. El repositorio incluye `.env.example`; no incluye `.env.production`:
 
-### 8. Ejecutar las migraciones
-`
-php artisan migrate
-`
+   ```powershell
+   Copy-Item .env.example .env
+   ```
 
-### 9. Cargar los datos iniciales del sistema
-`
-php artisan db:seed --class=ProductionSeeder
-`
-### Recomendacion(ingresar datos de prueba mediante comando para el entendimiento del sistema)
-`
-php artisan db:seed --class=DatabaseSeeder
-`
+   Editá `.env` y verificá la configuración de MySQL. Para la configuración predeterminada de XAMPP:
 
-### 10. Compilar los assets del frontend (solo la primera vez)
-`
-npm install
-npm run build
-`
+   ```dotenv
+   APP_NAME="Gestor de Convenios FIO"
+   APP_ENV=local
+   APP_DEBUG=true
+   APP_URL=http://localhost
 
-### 11. Acceder al sistema
-Abrir en el navegador: http://localhost/gestor_convenios_fio/public
+   DB_CONNECTION=mysql
+   DB_HOST=127.0.0.1
+   DB_PORT=3306
+   DB_DATABASE=gestor_convenios_fio
+   DB_USERNAME=root
+   DB_PASSWORD=
+   ```
 
-### Credenciales del administrador
-- Email: admin@fio.uner.edu.ar
-- Password: Admin1234!
-(¡Cambiar la contrasena en el primer acceso!)
+   Si tu usuario de MySQL tiene contraseña, asignala en `DB_PASSWORD`.
 
-## Para desarrollo (opcional)
-Si se necesita modificar el codigo, usar estos comandos en terminales separadas:
-`
-npm run dev
-php artisan serve
-`
-Y acceder por: http://localhost:8000
+6. En phpMyAdmin (`http://localhost/phpmyadmin`), creá la base `gestor_convenios_fio` con cotejamiento `utf8mb4_unicode_ci`. También podés crearla desde la consola de MySQL:
+
+   ```sql
+   CREATE DATABASE gestor_convenios_fio CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+   ```
+
+7. Generá la clave de Laravel, migrá el esquema e insertá los datos estructurales y la cuenta administradora:
+
+   ```powershell
+   php artisan key:generate
+   php artisan migrate --seed --seeder=ProductionSeeder
+   ```
+
+   Este comando ejecuta las migraciones y `ProductionSeeder`. Crea roles y permisos, estados y tipos de convenio, carreras y el administrador inicial. No carga registros aleatorios de demostración.
+
+8. Compilá los recursos del frontend:
+
+   ```powershell
+   npm run build
+   ```
+
+9. Abrí el sistema en `http://localhost/Gestor-Convenios-FIO/public`.
+
+   Para desarrollo también podés iniciar Vite (`npm run dev`) y, en otra terminal, Laravel (`php artisan serve`). En ese caso usá `http://127.0.0.1:8000`.
+
+## Cuenta inicial
+
+El `ProductionSeeder` crea esta cuenta si todavía no existe:
+
+- Email: `admin@fio.uner.edu.ar`
+- Contraseña: `Admin1234!`
+
+Cambiala después del primer acceso. Esta cuenta es de instalación; no la uses como credencial compartida para un entorno público.
+
+## Datos de demostración y pruebas
+
+`DatabaseSeeder` contiene usuarios de demostración (`admin@test.com`, `director@test.com`, `coordinador@test.com`, `secretary@test.com` y `docente@test.com`, contraseña `password`) y genera datos aleatorios con factories. **No ejecutes** `php artisan db:seed` después de `ProductionSeeder` esperando obtener el entorno de prueba: los seeders actuales no están preparados para ejecutarse juntos sobre esa misma base y el sembrado puede fallar o producir datos inconsistentes.
+
+En particular, `DatabaseSeeder` no invoca `TestContractsSeeder`; ese seeder crea convenios suponiendo IDs existentes (por ejemplo, empresa, secretaria, empleado, docente y estudiante con ID 1), por lo que no garantiza datos válidos en una base nueva. Hasta corregir y verificar el orden y las dependencias de esos seeders, la instalación reproducible de esta guía incluye solo los datos estructurales y la cuenta administradora.
+
+Si necesitás una base aislada para ejecutar pruebas automatizadas, el proyecto configura PHPUnit para usar SQLite en memoria (`php artisan test`); eso no modifica la base MySQL de desarrollo.
+
+## Reiniciar la base local
+
+Para borrar y reconstruir **toda** la base configurada en `.env`, incluidos sus datos, ejecutá:
+
+```powershell
+php artisan migrate:fresh --seed --seeder=ProductionSeeder
+```
+
+Usalo únicamente en una base local descartable. No lo ejecutes en una base con información que quieras conservar.
+
+## Problemas frecuentes
+
+- **No conecta a MySQL:** confirmá que MySQL esté iniciado en XAMPP y que `DB_HOST`, `DB_PORT`, `DB_DATABASE`, `DB_USERNAME` y `DB_PASSWORD` coincidan con tu instalación.
+- **Cambiaste `.env` y Laravel conserva valores anteriores:** ejecutá `php artisan config:clear` y volvé a intentar.
+- **Falta una extensión PHP:** habilitala en el `php.ini` usado por la terminal y reiniciá Apache si también se sirve desde XAMPP. Verificá la configuración de CLI con `php --ini`.
+- **No aparecen estilos o scripts:** ejecutá `npm install` y `npm run build`; para desarrollo, mantené activo `npm run dev`.
