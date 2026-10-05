@@ -1,6 +1,6 @@
 ﻿# Puesta en marcha - Gestor de Convenios FIO
 
-Esta guía configura el proyecto en Windows con XAMPP, crea el esquema de la base y carga los datos iniciales del sistema. Está escrita para la carpeta `C:\xampp\htdocs\Gestor-Convenios-FIO`.
+Esta guía configura el proyecto en Windows con XAMPP. La instalación inicial crea el esquema y carga solo los datos estructurales y la cuenta administradora; los registros ficticios se cargan únicamente cuando se quiere probar el sistema en local. Está escrita para la carpeta `C:\xampp\htdocs\Gestor-Convenios-FIO`.
 
 ## Requisitos
 
@@ -58,14 +58,14 @@ Si los comandos `php`, `composer` o `npm` no se reconocen, agregá sus carpetas 
    CREATE DATABASE gestor_convenios_fio CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
    ```
 
-7. Generá la clave de Laravel, migrá el esquema e insertá los datos estructurales y la cuenta administradora:
+7. Generá la clave de Laravel y creá el esquema con los datos estructurales, sin registros ficticios:
 
    ```powershell
    php artisan key:generate
    php artisan migrate --seed --seeder=ProductionSeeder
    ```
 
-   Este comando ejecuta las migraciones y `ProductionSeeder`. Crea roles y permisos, estados y tipos de convenio, carreras y el administrador inicial. No carga registros aleatorios de demostración.
+   Este comando ejecuta las migraciones y `ProductionSeeder`. Carga roles, permisos, estados, tipos de convenio, carreras y la cuenta administradora inicial, pero no genera usuarios, empresas, estudiantes ni convenios ficticios.
 
 8. Compilá los recursos del frontend:
 
@@ -77,32 +77,37 @@ Si los comandos `php`, `composer` o `npm` no se reconocen, agregá sus carpetas 
 
    Para desarrollo también podés iniciar Vite (`npm run dev`) y, en otra terminal, Laravel (`php artisan serve`). En ese caso usá `http://127.0.0.1:8000`.
 
-## Cuenta inicial
+## Carga de datos de prueba para desarrollo local
 
-El `ProductionSeeder` crea esta cuenta si todavía no existe:
+Solo cuando quieras probar el sistema con registros ficticios, configurá `.env` para una base local descartable y ejecutá:
 
-- Email: `admin@fio.uner.edu.ar`
-- Contraseña: `Admin1234!`
+```powershell
+php artisan migrate:fresh --seed
+```
 
-Cambiala después del primer acceso. Esta cuenta es de instalación; no la uses como credencial compartida para un entorno público.
+Este comando **borra todas las tablas y los datos existentes** de la base indicada en `.env`, vuelve a ejecutar las migraciones y carga `DatabaseSeeder`. No lo ejecutes en una base compartida o con información que quieras conservar. No uses este seeder en producción.
 
-## Datos de demostración y pruebas
+`DatabaseSeeder` crea estas cuentas con la contraseña `password`:
 
-`DatabaseSeeder` contiene usuarios de demostración (`admin@test.com`, `director@test.com`, `coordinador@test.com`, `secretary@test.com` y `docente@test.com`, contraseña `password`) y genera datos aleatorios con factories. **No ejecutes** `php artisan db:seed` después de `ProductionSeeder` esperando obtener el entorno de prueba: los seeders actuales no están preparados para ejecutarse juntos sobre esa misma base y el sembrado puede fallar o producir datos inconsistentes.
+- `admin@test.com` (Admin)
+- `director@test.com` (Director)
+- `coordinador@test.com` (Coordinador)
+- `secretary@test.com` (Secretaria)
+- `docente@test.com` (Docente)
 
-En particular, `DatabaseSeeder` no invoca `TestContractsSeeder`; ese seeder crea convenios suponiendo IDs existentes (por ejemplo, empresa, secretaria, empleado, docente y estudiante con ID 1), por lo que no garantiza datos válidos en una base nueva. Hasta corregir y verificar el orden y las dependencias de esos seeders, la instalación reproducible de esta guía incluye solo los datos estructurales y la cuenta administradora.
-
-Si necesitás una base aislada para ejecutar pruebas automatizadas, el proyecto configura PHPUnit para usar SQLite en memoria (`php artisan test`); eso no modifica la base MySQL de desarrollo.
+Estas credenciales son solo para desarrollo/demo; no las uses en un entorno público.
 
 ## Reiniciar la base local
 
-Para borrar y reconstruir **toda** la base configurada en `.env`, incluidos sus datos, ejecutá:
+Para borrar y reconstruir **toda** la base local configurada en `.env` sin datos ficticios, repetí las migraciones y el sembrado estructural:
 
 ```powershell
 php artisan migrate:fresh --seed --seeder=ProductionSeeder
 ```
 
-Usalo únicamente en una base local descartable. No lo ejecutes en una base con información que quieras conservar.
+También borra todos los datos existentes. Usalo únicamente en una base local descartable; no lo ejecutes en una base con información que quieras conservar.
+
+Las pruebas automatizadas usan la configuración declarada en `phpunit.xml`. Ejecutalas con `php artisan test`; no requieren poblar MySQL.
 
 ## Problemas frecuentes
 
