@@ -25,7 +25,7 @@ Si los comandos `php`, `composer` o `npm` no se reconocen, agregá sus carpetas 
 
    ```powershell
    composer install
-   npm install
+  
    ```
 
 5. Creá el archivo de entorno. El repositorio incluye `.env.example`; no incluye `.env.production`:
@@ -70,6 +70,7 @@ Si los comandos `php`, `composer` o `npm` no se reconocen, agregá sus carpetas 
 8. Compilá los recursos del frontend:
 
    ```powershell
+    npm install
    npm run build
    ```
 
